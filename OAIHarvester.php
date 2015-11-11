@@ -29,12 +29,23 @@ class OAIHarvester {
   private $curlInfo = array();
   private $requestHeader;
   private $httpHeader;
+  private $useAuthentication = FALSE;
+  private $username = NULL;
+  private $password = NULL;
 
   public function __construct($requestVerb = 'ListRecords', $baseUrl = '', $requestArguments = array(), $http_cache = FALSE) {
     $this->requestVerb = $requestVerb;
     $this->baseUrl = $baseUrl;
     $this->requestArguments = $requestArguments;
     $this->http_cache = $http_cache;
+  }
+
+  public function setAuthentication($username = NULL, $password = NULL) {
+    if (!is_null($username) && !is_null($password)) {
+      $this->useAuthentication = TRUE;
+      $this->username = $username;
+      $this->password = $password;
+    }
   }
 
   public function fetchContent($type = 'url', $filename = '') {
@@ -96,9 +107,15 @@ class OAIHarvester {
       curl_setopt($ch, CURLOPT_USERAGENT, 'Omeka-XC OAI harvester');
       curl_setopt($ch, CURLOPT_ENCODING, "gzip,deflate");
       curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 10);
+
+      if ($this->useAuthentication) {
+        curl_setopt($ch, CURLOPT_USERPWD, $this->username . ":" . $this->password);
+      }
+
       if (substr($this->requestUrl, 0, 5) == 'https') {
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
       }
+
       curl_setopt($ch, CURLOPT_URL, $this->requestUrl);
       $this->statistics['fetch']['curl_init'] = microtime(TRUE) - $t0;
 
