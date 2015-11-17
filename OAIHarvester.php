@@ -29,6 +29,7 @@ class OAIHarvester {
   private $curlInfo = array();
   private $requestHeader;
   private $httpHeader;
+  private $parsedHttpHeader = array();
   private $useAuthentication = FALSE;
   private $username = NULL;
   private $password = NULL;
@@ -487,4 +488,30 @@ class OAIHarvester {
   public function getHttpHeader() {
     return $this->httpHeader;
   }
+
+  /**
+   * Gets the content type header
+   *
+   * @return (string)
+   *   The content type or FALSE if it is not defined
+   */
+  public function getContentType() {
+    if (empty($this->parsedHttpHeader)) {
+      $this->parseHttpHeader();
+    }
+    return isset($this->parsedHttpHeader['Content-Type']) ? $this->parsedHttpHeader['Content-Type'] : FALSE;
+  }
+
+  private function parseHttpHeader() {
+    if (!empty($this->httpHeader)) {
+      $lines = split("\r?\n", $this->httpHeader);
+      foreach ($lines as $line) {
+        if (!preg_match('/^HTTP/', $line) && stristr($line, ': ')) {
+          list($key, $value) = explode(': ', trim($line), 2);
+          $this->parsedHttpHeader[$key] = $value;
+        }
+      }
+    }
+  }
+
 }
