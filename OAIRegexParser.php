@@ -16,6 +16,7 @@ class OAIRegexParser implements IOAIParser {
   private $raw_records;
   private $raw_resumption;
   private $httpCode;
+  private $requestVerb;
 
   /** The OAI-PMH error messages */
   private $errorMsgs        = array();
@@ -33,9 +34,10 @@ class OAIRegexParser implements IOAIParser {
   private $hasResumptionToken = FALSE;
   private $need_debug       = FALSE;
 
-  function __construct($content, $httpCode = 200) {
+  function __construct($content, $httpCode = 200, $requestVerb = "ListRecords") {
     $this->httpCode = $httpCode;
     $this->rawContent = $content;
+    $this->requestVerb = $requestVerb;
     $t0 = microtime(TRUE);
     $this->process();
     $this->statistics['response'] = microtime(TRUE) - $t0;

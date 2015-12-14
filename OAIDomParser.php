@@ -20,10 +20,12 @@ class OAIDomParser implements IOAIParser {
   private $httpErrorMsg;
   private $statistics = array('response' => 0, 'records' => 0);
   private $parserErrors = array();
+  private $requestVerb;
 
-  function __construct($content, $httpCode = 200) {
+  function __construct($content, $httpCode = 200, $requestVerb = "ListRecords") {
     $t0 = microtime(TRUE);
     $this->httpCode = $httpCode;
+    $this->requestVerb = $requestVerb;
     if (strlen(trim($content)) == 0) {
       $parserErrors[] =  t('The XML to parse is an empty string.');
       xc_log_error('DOMParser', 'The XML to parse is an empty string.');
@@ -64,7 +66,8 @@ class OAIDomParser implements IOAIParser {
     $this->recordCounter++;
     if ($this->recordCounter < $this->getRecordCount()) {
       $t0 = microtime(TRUE);
-      $record = $this->parseRecord($this->oai->ListRecords->record[$this->recordCounter]);
+      // $record = $this->parseRecord($this->oai->ListRecords->record[$this->recordCounter]);
+      $record = $this->parseRecord($this->oai->{$this->requestVerb}->record[$this->recordCounter]);
       $this->statistics['records'] += (microtime(TRUE) - $t0);
       return $record;
     }
@@ -76,14 +79,17 @@ class OAIDomParser implements IOAIParser {
   }
 
   function getRecordCount() {
-    if ($this->recordCount == -1 && isset($this->oai->ListRecords->record)) {
-      $this->recordCount = $this->oai->ListRecords->record->count();
+    // if ($this->recordCount == -1 && isset($this->oai->ListRecords->record)) {
+    //  $this->recordCount = $this->oai->ListRecords->record->count();
+    if ($this->recordCount == -1 && isset($this->oai->{$this->requestVerb}->record)) {
+      $this->recordCount = $this->oai->{$this->requestVerb}->record->count();
     }
     return $this->recordCount;
   }
 
   function hasResumptionToken() {
-    $token = (string) $this->oai->ListRecords->resumptionToken;
+    // $token = (string) $this->oai->ListRecords->resumptionToken;
+    $token = (string) $this->oai->{$this->requestVerb}->resumptionToken;
     return !empty($token);
   }
 
@@ -99,7 +105,8 @@ class OAIDomParser implements IOAIParser {
    * @see oaiharvester/includes/IOAIParser#get_resumptionToken()
    */
   function getResumptionToken() {
-    $token = $this->oai->ListRecords->resumptionToken;
+    // $token = $this->oai->ListRecords->resumptionToken;
+    $token = $this->oai->{$this->requestVerb}->resumptionToken;
     return array(
       'attributes' => array(
         'completeListSize' => (int) $token->attributes()->completeListSize,

@@ -151,13 +151,13 @@ class OAIHarvester {
       // regex-based parser
       case 'regex':
         require_once 'OAIRegexParser.php';
-        $this->parser = new OAIRegexParser($this->content, $this->httpCode);
+        $this->parser = new OAIRegexParser($this->content, $this->httpCode, $this->requestVerb);
         break;
       // DOM-based parser
       case 'dom':
       default:
         require_once 'OAIDomParser.php';
-        $this->parser = new OAIDomParser($this->content, $this->httpCode);
+        $this->parser = new OAIDomParser($this->content, $this->httpCode, $this->requestVerb);
     }
   }
 
